@@ -27,24 +27,32 @@ app.post("/repositories", (request, response) => {
 
   repositories.push(repository);
 
-  return response.json(repository);
+  return response.status(201).json(repository);
 });
 
 app.put("/repositories/:id", (request, response) => {
   const { id } = request.params;
   const { title, url, techs } = request.body;
 
-  const repository = repositories.find(repository => repository.id === id);
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id);
 
-  if(!repository) {
+  if(repositoryIndex < 0) {
     return response.status(400).send();
   }
 
-  repository.title = title;
-  repository.url = url;
-  repository.techs = techs;
-  
-  return response.json(repository);
+  const { likes } = repositories.find(repository => repository.id === id);
+
+  const repository = {
+    id,
+    title,
+    url,
+    techs,
+    likes,
+  }
+
+  repositories[repositoryIndex] = repository;
+
+  return response.status(201).json(repository);
 
 });
 
@@ -66,15 +74,27 @@ app.post("/repositories/:id/like", (request, response) => {
   const { id } = request.params;
 
 
-  const repository = repositories.find(repository => repository.id === id);
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id);
 
-  if(!repository) {
+  if(repositoryIndex < 0) {
     return response.status(400).send();
   }
 
-  repository.likes += 1;
+  const { title, url, techs, likes } = repositories.find(repository => repository.id === id);
 
-  return response.json(repository);
+  const incrementedLikes = likes + 1;
+
+  const repository = {
+    id,
+    title,
+    url,
+    techs,
+    likes: incrementedLikes,
+  }
+
+  repositories[repositoryIndex] = repository;
+
+  return response.status(201).json(repository);
 });
 
 module.exports = app;
